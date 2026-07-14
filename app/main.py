@@ -5,6 +5,12 @@ from app import models
 from app.services.json_loader import load_json_to_db
 from app.routers import contents
 
+from app.routers import contents
+from app.routers import posts
+
+app.include_router(contents.router)
+app.include_router(posts.router)
+
 Base.metadata.create_all(bind=engine)
 
 load_json_to_db()
