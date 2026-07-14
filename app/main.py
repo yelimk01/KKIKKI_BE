@@ -1,30 +1,40 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 from app import models
-from app.services.json_loader import load_json_to_db
-from app.routers import contents
 
 from app.routers import contents
 from app.routers import posts
 
-app.include_router(contents.router)
-app.include_router(posts.router)
+from app.services.json_loader import load_json_to_db
 
+# 테이블 생성
 Base.metadata.create_all(bind=engine)
 
+# JSON 데이터 적재
 load_json_to_db()
 
-
+# FastAPI 앱 생성
 app = FastAPI(
     title="LocalHub API",
     version="1.0.0"
 )
 
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Router 등록
 app.include_router(contents.router)
+app.include_router(posts.router)
+
 
 @app.get("/")
 def root():
-    return {
-        "message": "LocalHub API Server"
-    }
+    return {"message": "LocalHub API Server"}
