@@ -1,7 +1,18 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from app.database import Base, engine
+from app import models
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="LocalHub API",
+    version="1.0.0"
+)
+
 
 @app.get("/")
 def root():
-    return {"message": "LocalHub API Server"}
+    return {
+        "message": "LocalHub API Server"
+    }
