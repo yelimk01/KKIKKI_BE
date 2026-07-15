@@ -106,7 +106,7 @@ def create_post(
 ):
 
     # 이미지 개수 제한
-    if len(files) > 10:
+    if files and len(files) > 10:
         raise HTTPException(
             status_code=400,
             detail="이미지는 최대 10장까지 가능합니다."
