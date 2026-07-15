@@ -61,9 +61,10 @@ def update_post(
 @router.delete("/{post_id}")
 def delete_post(
     post_id: int,
+    request: schemas.PostDelete,
     db: Session = Depends(get_db)
 ):
-    success = crud.delete_post(db, post_id)
+    success = crud.delete_post(db, post_id, request.password)
 
     if not success:
         raise HTTPException(

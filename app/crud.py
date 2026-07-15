@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+from app import models, schemas
 from app.models import TourContent
 
 from datetime import datetime
@@ -8,8 +9,6 @@ from app.models import Post
 from app.models import Comment
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-import models, schemas
-
 
 
 # ==========================

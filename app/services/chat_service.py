@@ -5,12 +5,21 @@ from dotenv import load_dotenv
 from app import crud
 
 # .env 파일 로드
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ENV_PATH = os.path.join(BASE_DIR, ".env")
+load_dotenv(dotenv_path=ENV_PATH)
 
-# 비동기 OpenAI 클라이언트 초기화 (.env에 OPENAI_API_KEY 필수)
-client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# 에러 방지를 위해 키가 없으면 임시 문자열('dummy_key')을 넣습니다.
+api_key = os.environ.get("OPENAI_API_KEY", "dummy_key")
+client = AsyncOpenAI(api_key=api_key)
 
 async def get_chat_response(user_question: str, db: Session) -> str:
+    # --- 🛑 키가 없을 때의 임시(Mock) 응답 처리 ---
+    if api_key == "dummy_key" or api_key.startswith("sk-여기에"):
+        print("⚠️ [Warning] 실제 OpenAI API 키가 없어서 임시 답변을 반환합니다.")
+        return f"안녕하세요! 현재 챗봇 API 키가 등록되지 않아 임시로 답변해 드립니다. (질문 확인: '{user_question}')"
+    # ---------------------------------------------
+
     # 1. 질문에서 검색 키워드 추출 (간단하게 띄어쓰기 기준 2글자 이상 단어)
     keywords = [word for word in user_question.split() if len(word) >= 2]
     
@@ -19,20 +28,18 @@ async def get_chat_response(user_question: str, db: Session) -> str:
     # 2. DB에서 관광 데이터 검색
     if keywords:
         for keyword in keywords:
-            # 만들어두신 crud.search_contents 활용
             results = crud.search_contents(db, keyword)
             if results:
                 search_results.extend(results)
-                break  # 첫 번째로 매칭된 결과만 가져와도 충분함
+                break  
 
-    # 검색 결과가 없다면 임의의 데이터(예: 축제/행사 - contenttypeid=15) 상위 10개 가져오기
+    # 검색 결과가 없다면 임의의 데이터 상위 10개 가져오기
     if not search_results:
         search_results = crud.get_contents_by_type(db, content_type_id=15)[:10]
 
-    # 중복 제거 및 상위 10개로 제한 (토큰 제한 방지)
     search_results = list(set(search_results))[:10]
 
-    # 3. 프롬프트에 주입할 컨텍스트(문맥) 문자열 생성
+    # 3. 프롬프트 문맥 생성
     context_text = "다음은 관련된 서울 지역 정보입니다:\n"
     for item in search_results:
         title = item.title or "이름 없음"
@@ -43,7 +50,7 @@ async def get_chat_response(user_question: str, db: Session) -> str:
     # 4. OpenAI API 호출
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo", # 또는 gpt-4o-mini
+            model="gpt-3.5-turbo",
             messages=[
                 {
                     "role": "system", 

@@ -94,7 +94,7 @@ class Comment(Base):
     author = Column(String, nullable=False)
 
     content = Column(Text, nullable=False)
-
+    password = Column(String, nullable=False)
     created_at = Column(DateTime)
 
     post = relationship(

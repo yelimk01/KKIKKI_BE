@@ -39,12 +39,6 @@ class PostCreate(BaseModel):
     author: str
     password: str
 
-
-class PostUpdate(BaseModel):
-    title: str
-    content: str
-
-
 class PostResponse(BaseModel):
     id: int
 
@@ -61,6 +55,13 @@ class PostResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class PostUpdate(BaseModel):
+    title: str
+    content: str
+    password: str  # 추가: 수정 시 권한 확인용 비밀번호
+
+class PostDelete(BaseModel):
+    password: str  # 추가: 삭제 시 권한 확인용 비밀번호
 
 # ==========================
 # Comment
@@ -69,19 +70,19 @@ class PostResponse(BaseModel):
 class CommentCreate(BaseModel):
     author: str
     content: str
-
+    password: str  # 추가: 평문 저장 및 검증용 비밀번호
 
 class CommentResponse(BaseModel):
     id: int
-
     author: str
     content: str
-
     created_at: datetime | None
 
     class Config:
         from_attributes = True
 
+class CommentDelete(BaseModel):
+    password: str  # 추가: 삭제 요청 시 검증할 비밀번호
 
 # ==========================
 # ChatBot
