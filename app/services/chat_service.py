@@ -50,7 +50,7 @@ async def get_chat_response(user_question: str, db: Session) -> str:
     # 4. OpenAI API 호출
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system", 
