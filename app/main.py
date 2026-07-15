@@ -8,18 +8,6 @@ from app.routers import contents, posts, comments, chatbot
 
 from app.services.json_loader import load_json_to_db
 
-# 테이블 생성
-Base.metadata.create_all(bind=engine)
-
-# JSON 데이터 적재
-load_json_to_db()
-
-# FastAPI 앱 생성
-app = FastAPI(
-    title="LocalHub API",
-    version="1.0.0"
-)
-
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +19,18 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# 테이블 생성
+Base.metadata.create_all(bind=engine)
+
+# JSON 데이터 적재
+load_json_to_db()
+
+# FastAPI 앱 생성
+app = FastAPI(
+    title="LocalHub API",
+    version="1.0.0"
 )
 
 # Router 등록
