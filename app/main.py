@@ -49,13 +49,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-<<<<<<< HEAD
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-=======
         "http://localhost:5173", 
         "http://localhost:3000"   # <-- Nuxt 프론트엔드 포트(3000)를 필수로 추가해 주세요!
->>>>>>> e1e0175f00ba2e94133648e8163a66db4815b531
     ],
     allow_credentials=True,
     allow_methods=["*"],
