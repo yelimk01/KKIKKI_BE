@@ -68,7 +68,7 @@ async def get_chat_response(user_question: str, db: Session) -> str:
     
     # 3. 프롬프트 문맥 생성
     context_text = "다음은 관련된 서울 지역 정보입니다:\n"
-    for item in list(unique_results)[:10]:
+    for item in list(unique_results)[:3]:
         title = getattr(item, 'title', "이름 없음")
         addr = getattr(item, 'addr1', "주소 미상")
         tel = getattr(item, 'tel', "전화번호 없음")
@@ -90,8 +90,11 @@ async def get_chat_response(user_question: str, db: Session) -> str:
                 {"role": "user", "content": user_question}
             ],
             # 🚨 가장 처음에 났던 400 에러를 해결하기 위한 파라미터 적용
-            max_completion_tokens=1200
+            max_completion_tokens=2000 
         )
+        print("========== RESPONSE ==========")
+        print(response.model_dump())
+        print("==============================")
     
         return response.choices[0].message.content
         
