@@ -7,14 +7,16 @@ DATABASE_URL = "sqlite:///./localhub.db"
 # SQLite 설정
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False},
+    future=True,
 )
 
 # 세션 생성
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine
+    bind=engine,
+    future=True,
 )
 
 # 모델의 부모 클래스

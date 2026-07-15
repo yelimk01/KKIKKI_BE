@@ -38,11 +38,23 @@ def get_contents_by_type(
 
 # 지역 코드 조회
 @router.get("/area/{area_code}", response_model=list[TourContentResponse])
-def get_contents_by_area(
-    area_code: str,
-    db: Session = Depends(get_db)
-):
-    return crud.get_contents_by_area(db, area_code)
+@router.get("/area/{area_code}")
+def get_contents_by_area(area_code: str, db: Session = Depends(get_db)):
+    # zipcode의 앞 3자리가 area_code와 일치하는 데이터 조회
+    # func.substr을 사용하여 zipcode의 1번째 자리부터 3글자를 추출 후 비교
+    results = db.query(ContentModel).filter(
+        func.substr(ContentModel.zipcode, 1, 3) == area_code
+    ).all()
+    
+    # 또는 LIKE 연산자를 사용하고 싶다면:
+    # results = db.query(ContentModel).filter(
+    #     ContentModel.zipcode.like(f"{area_code}%")
+    # ).all()
+
+    if not results:
+        return [] # 데이터가 없어도 에러 대신 빈 리스트 반환이 프론트엔드 처리에 좋습니다.
+        
+    return results
 
 # 관광 데이터 상세 조회
 @router.get("/{content_id}", response_model=TourContentResponse)
