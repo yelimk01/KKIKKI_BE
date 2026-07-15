@@ -11,7 +11,7 @@ router = APIRouter(
 
 
 # 게시글 목록 조회
-@router.get("/", response_model=list[schemas.PostResponse])
+@router.get("", response_model=list[schemas.PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     return crud.get_posts(db)
 
