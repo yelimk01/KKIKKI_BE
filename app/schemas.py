@@ -25,14 +25,14 @@ class TourContentBase(BaseModel):
     firstimage: str | None = None
     firstimage2: str | None = None
 
-    # 화면에서 자치구 필터에 사용
+    # 자치구 필터용
     district_name: str | None = None
 
-    # TourAPI 원본 등록·수정 시각
+    # TourAPI 등록/수정 시간
     createdtime: str | None = None
     modifiedtime: str | None = None
 
-    # 서비스 내부 통계용
+    # 서비스 통계
     view_count: int = 0
     mention_count: int = 0
 
@@ -43,7 +43,7 @@ class TourContentResponse(TourContentBase):
 
 class TourContentSimpleResponse(BaseModel):
     """
-    게시글 응답에 포함할 간단한 관광정보
+    게시글 상세에 포함할 간단한 관광정보
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -68,24 +68,31 @@ class TourContentSimpleResponse(BaseModel):
 
 class Post(BaseModel):
     """
-    DB 모델과 직접 매핑되는 기본 Post 스키마
+    기존 호환용 기본 Post Schema
     """
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
     title: str
     content: str
     author: str
-    
+
     view_count: int
     like_count: int
-    
+
     created_at: datetime
     updated_at: datetime
-    
+
     tour_content_id: str | None = None
-    
+
+
 class PostCreate(BaseModel):
+    """
+    게시글 작성 요청
+    """
+
     title: str = Field(
         min_length=1,
         max_length=200,
@@ -105,10 +112,28 @@ class PostCreate(BaseModel):
         max_length=100,
     )
 
-    # 게시글당 장소 또는 행사 하나만 선택
-    # 일반 게시글은 장소를 선택하지 않아도 되므로 None 허용
+    # 선택한 장소
     tour_content_id: str | None = None
 
+
+# ==========================================
+# Post Image
+# ==========================================
+
+class PostImageResponse(BaseModel):
+    """
+    게시글 이미지 응답
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    image_url: str
+
+
+# ==========================================
+# Post Response
+# ==========================================
 
 class PostResponse(BaseModel):
     """
@@ -129,35 +154,46 @@ class PostResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    # 선택한 관광정보 ID
+    # 선택한 관광정보
     tour_content_id: str | None = None
 
-    # 선택한 관광정보의 간단한 상세 정보
     tour_content: TourContentSimpleResponse | None = None
+
+    # 첨부 이미지
+    images: list[PostImageResponse] = []
 
 
 class PostListResponse(BaseModel):
     """
-    게시글 목록 화면용 응답
-    본문 전체는 제외한다.
+    게시글 목록 화면 응답
+
+    표시:
+    - 번호
+    - 제목
+    - 작성자
+    - 작성일
+    - 조회수
+    - 좋아요
     """
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
     title: str
     author: str
+
+    created_at: datetime
 
     view_count: int
     like_count: int
 
-    created_at: datetime
-
-    tour_content_id: str | None = None
-    tour_content: TourContentSimpleResponse | None = None
-
 
 class PostUpdate(BaseModel):
+    """
+    게시글 수정 요청
+    """
+
     title: str = Field(
         min_length=1,
         max_length=200,
@@ -167,17 +203,21 @@ class PostUpdate(BaseModel):
         min_length=1,
     )
 
-    # 수정 권한 확인용 비밀번호
+    # 수정 권한 확인용
     password: str = Field(
         min_length=1,
         max_length=100,
     )
 
-    # 수정 시 장소를 변경하거나 제거할 수 있음
+    # 장소 변경 가능
     tour_content_id: str | None = None
 
 
 class PostDelete(BaseModel):
+    """
+    게시글 삭제 요청
+    """
+
     password: str = Field(
         min_length=1,
         max_length=100,
@@ -186,7 +226,7 @@ class PostDelete(BaseModel):
 
 class PasswordVerifyRequest(BaseModel):
     """
-    게시글 수정·삭제 전 비밀번호 확인 모달 요청
+    수정/삭제 전 비밀번호 확인
     """
 
     password: str = Field(
@@ -209,6 +249,10 @@ class PostLikeResponse(BaseModel):
 # ==========================================
 
 class PostPageResponse(BaseModel):
+    """
+    게시글 목록 페이지 응답
+    """
+
     items: list[PostListResponse]
 
     page: int
@@ -233,6 +277,7 @@ class TourContentPageResponse(BaseModel):
 # ==========================================
 
 class CommentCreate(BaseModel):
+
     author: str = Field(
         min_length=1,
         max_length=50,
@@ -249,6 +294,7 @@ class CommentCreate(BaseModel):
 
 
 class CommentResponse(BaseModel):
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -261,6 +307,7 @@ class CommentResponse(BaseModel):
 
 
 class CommentDelete(BaseModel):
+
     password: str = Field(
         min_length=1,
         max_length=100,
@@ -272,6 +319,7 @@ class CommentDelete(BaseModel):
 # ==========================================
 
 class ChatHistoryItem(BaseModel):
+
     role: str = Field(
         pattern="^(user|assistant)$",
     )
@@ -283,18 +331,19 @@ class ChatHistoryItem(BaseModel):
 
 
 class ChatRequest(BaseModel):
+
     question: str = Field(
         min_length=1,
         max_length=1000,
     )
 
-    # 대화 내역은 프론트에서 전달
     history: list[ChatHistoryItem] = Field(
         default_factory=list,
     )
 
 
 class ChatPlaceResponse(BaseModel):
+
     model_config = ConfigDict(from_attributes=True)
 
     contentid: str
@@ -313,6 +362,7 @@ class ChatPlaceResponse(BaseModel):
 
 
 class ChatPostResponse(BaseModel):
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -324,9 +374,9 @@ class ChatPostResponse(BaseModel):
 
 
 class ChatResponse(BaseModel):
+
     answer: str
 
-    # 챗봇 답변 아래에 장소·게시글 카드를 표시할 때 사용
     places: list[ChatPlaceResponse] = Field(
         default_factory=list,
     )
