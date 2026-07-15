@@ -194,6 +194,50 @@ class Post(Base):
         back_populates="post",
         cascade="all, delete-orphan",
     )
+    
+    images = relationship(
+        "PostImage",
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )
+    
+# ==========================================
+# 게시글 이미지
+# ==========================================
+class PostImage(Base):
+    __tablename__ = "post_images"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    post_id = Column(
+        Integer,
+        ForeignKey(
+            "posts.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    image_url = Column(
+        String,
+        nullable=False,
+    )
+
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+
+    post = relationship(
+        "Post",
+        back_populates="images",
+    )
 
 
 # ==========================================

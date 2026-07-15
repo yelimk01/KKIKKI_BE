@@ -341,14 +341,18 @@ def get_post(
     """
     게시글 한 건 조회
 
-    연결된 관광정보도 함께 조회한다.
+    연결된 관광정보와 이미지를 함께 조회한다.
     """
+
     return (
         db.query(Post)
         .options(
-            joinedload(Post.tour_content)
+            joinedload(Post.tour_content),
+            joinedload(Post.images),
         )
-        .filter(Post.id == post_id)
+        .filter(
+            Post.id == post_id
+        )
         .first()
     )
 
@@ -448,7 +452,7 @@ def get_posts(
 def get_posts_page(
     db: Session,
     page: int = 1,
-    size: int = 10,
+    size: int = 12,
     keyword: str | None = None,
     search_type: str = "all",
     tour_content_id: str | None = None,
@@ -737,43 +741,6 @@ def delete_post(
     except Exception:
         db.rollback()
         raise
-
-
-def get_popular_posts_by_content(
-    db: Session,
-    content_id: str,
-    exclude_post_id: int | None = None,
-    limit: int = 3,
-):
-    """
-    같은 장소가 선택된 게시글 중 조회수가 높은 글을 조회한다.
-    """
-
-    query = (
-        db.query(Post)
-        .options(
-            joinedload(Post.tour_content)
-        )
-        .filter(
-            Post.tour_content_id == content_id
-        )
-    )
-
-    if exclude_post_id is not None:
-        query = query.filter(
-            Post.id != exclude_post_id
-        )
-
-    return (
-        query
-        .order_by(
-            Post.view_count.desc(),
-            Post.created_at.desc(),
-        )
-        .limit(limit)
-        .all()
-    )
-
 
 # ==========================================
 # Comment CRUD
