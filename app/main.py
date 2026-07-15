@@ -19,8 +19,6 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173", 
-        "http://localhost:3000",   # <-- Nuxt 프론트엔드 포트(3000)를 필수로 추가해 주세요!
         "https://kkikkilocalhub.netlify.app"
     ],
     allow_credentials=True,
