@@ -9,14 +9,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 ENV_PATH = os.path.join(BASE_DIR, ".env")
 load_dotenv(dotenv_path=ENV_PATH)
 
+
 # 환경 변수에서 가져오기
 api_key = os.environ.get("OPENAI_API_KEY", "local-llm")
 
-# OpenAI 클라이언트 설정
-client = AsyncOpenAI(
-    api_key=api_key, 
-    base_url="http://localhost:8000/v1" 
-)
+# 환경 변수로 클라우드 모드인지 체크
+IS_CLOUD = os.environ.get("RENDER") == "true" 
+
+if IS_CLOUD:
+    # 클라우드 배포 시에는 OpenAI 공식 API 사용 (로컬 주소 사용 금지)
+    client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+else:
+    # 로컬 개발 시에만 로컬 LLM 서버 사용
+    client = AsyncOpenAI(
+        api_key="local-llm",
+        base_url="http://localhost:8000/v1"
+    )
 
 async def get_chat_response(user_question: str, db: Session) -> str:
     # 1. 질문에서 검색 키워드 추출
