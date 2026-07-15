@@ -92,6 +92,10 @@ async def get_chat_response(user_question: str, db: Session) -> str:
             # 🚨 가장 처음에 났던 400 에러를 해결하기 위한 파라미터 적용
             max_completion_tokens=400 
         )
+        print("========== RESPONSE ==========")
+        print(response.model_dump())
+        print("==============================")
+    
         return response.choices[0].message.content
         
     except Exception as e:
