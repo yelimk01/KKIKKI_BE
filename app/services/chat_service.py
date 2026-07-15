@@ -14,7 +14,7 @@ api_key = os.environ.get("OPENAI_API_KEY", "dummy_key")
 client = AsyncOpenAI(api_key=api_key)
 
 async def get_chat_response(user_question: str, db: Session) -> str:
-    # --- 🛑 키가 없을 때의 임시(Mock) 응답 처리 ---
+    # --- 키가 없을 때의 임시(Mock) 응답 처리 ---
     if api_key == "dummy_key" or api_key.startswith("sk-여기에"):
         print("⚠️ [Warning] 실제 OpenAI API 키가 없어서 임시 답변을 반환합니다.")
         return f"안녕하세요! 현재 챗봇 API 키가 등록되지 않아 임시로 답변해 드립니다. (질문 확인: '{user_question}')"
@@ -50,7 +50,7 @@ async def get_chat_response(user_question: str, db: Session) -> str:
     # 4. OpenAI API 호출
     try:
         response = await client.chat.completions.create(
-            model="gpt-5-mini",
+            model="GPT-5 Mini",
             messages=[
                 {
                     "role": "system", 
@@ -63,7 +63,7 @@ async def get_chat_response(user_question: str, db: Session) -> str:
                 {"role": "user", "content": user_question}
             ],
             temperature=0.5,
-            max_tokens=400
+            max_completion_tokens=400
         )
         return response.choices[0].message.content
     except Exception as e:
