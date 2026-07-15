@@ -13,18 +13,9 @@ load_dotenv(dotenv_path=ENV_PATH)
 # 환경 변수에서 가져오기
 api_key = os.environ.get("OPENAI_API_KEY", "local-llm")
 
-# 환경 변수로 클라우드 모드인지 체크
-IS_CLOUD = os.environ.get("RENDER") == "true" 
-
-if IS_CLOUD:
-    # 클라우드 배포 시에는 OpenAI 공식 API 사용 (로컬 주소 사용 금지)
-    client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-else:
-    # 로컬 개발 시에만 로컬 LLM 서버 사용
-    client = AsyncOpenAI(
-        api_key="local-llm",
-        base_url="http://localhost:8000/v1"
-    )
+client = AsyncOpenAI(
+    api_key=os.environ["OPENAI_API_KEY"]
+)
 
 async def get_chat_response(user_question: str, db: Session) -> str:
     # 1. 질문에서 검색 키워드 추출
@@ -55,7 +46,7 @@ async def get_chat_response(user_question: str, db: Session) -> str:
     # 4. API 호출
     try:
         response = await client.chat.completions.create(
-            model="GPT-5 Mini", 
+            model="gpt-5-mini", 
             messages=[
                 {"role": "system", "content": f"안내 챗봇이야. [지역 정보]를 참고해 답변해줘.\n\n[지역 정보]\n{context_text}"},
                 {"role": "user", "content": user_question}
