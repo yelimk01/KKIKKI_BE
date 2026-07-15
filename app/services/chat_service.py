@@ -6,12 +6,14 @@ from app import crud
 
 # .env 파일 로드
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ENV_PATH = os.path.join(BASE_DIR, ".env")
+ENV_PATH = os.path.join(BASE_DIR, ".env") # 여기서 .env 파일을 찾습니다.
 load_dotenv(dotenv_path=ENV_PATH)
 
-# 에러 방지를 위해 키가 없으면 임시 문자열('dummy_key')을 넣습니다.
-api_key = os.environ.get("OPENAI_API_KEY", "dummy_key")
-client = AsyncOpenAI(api_key=api_key)
+# OpenAI 클라이언트 설정 (로컬 LLM 연결)
+client = AsyncOpenAI(
+    api_key="local-llm",  # 로컬은 키가 필요 없으니 임의의 값을 넣습니다.
+    base_url="http://localhost:8000/v1" # 로컬 서버의 주소입니다.
+)
 
 async def get_chat_response(user_question: str, db: Session) -> str:
     # --- 키가 없을 때의 임시(Mock) 응답 처리 ---
