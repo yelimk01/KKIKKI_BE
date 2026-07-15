@@ -4,8 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 from app import models
 
-from app.routers import contents
-from app.routers import posts
+from app.routers import contents, posts, comments, chatbot
 
 from app.services.json_loader import load_json_to_db
 
@@ -33,6 +32,8 @@ app.add_middleware(
 # Router 등록
 app.include_router(contents.router)
 app.include_router(posts.router)
+app.include_router(comments.router)
+app.include_router(chatbot.router)
 
 
 @app.get("/")
