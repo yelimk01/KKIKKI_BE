@@ -66,6 +66,25 @@ class TourContentSimpleResponse(BaseModel):
 # Post
 # ==========================================
 
+class Post(BaseModel):
+    """
+    DB 모델과 직접 매핑되는 기본 Post 스키마
+    """
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    content: str
+    author: str
+    
+    view_count: int
+    like_count: int
+    
+    created_at: datetime
+    updated_at: datetime
+    
+    tour_content_id: str | None = None
+    
 class PostCreate(BaseModel):
     title: str = Field(
         min_length=1,
