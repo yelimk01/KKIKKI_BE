@@ -3,6 +3,9 @@ from fastapi import (
     Depends,
     HTTPException,
     status,
+    Form,
+    UploadFile,
+    File,
 )
 
 from sqlalchemy.orm import Session
@@ -61,7 +64,6 @@ def read_post(
     db: Session = Depends(get_db),
 ):
 
-    # 먼저 존재 확인 + 상세 데이터 조회
     db_post = crud.get_post(
         db=db,
         post_id=post_id,
@@ -82,6 +84,7 @@ def read_post(
 
 # ==========================================
 # 게시글 작성
+# 이미지 최대 10장
 # ==========================================
 
 @router.post(
@@ -90,13 +93,39 @@ def read_post(
     status_code=status.HTTP_201_CREATED,
 )
 def create_post(
-    post: schemas.PostCreate,
+    title: str = Form(...),
+    content: str = Form(...),
+    author: str = Form(...),
+    password: str = Form(...),
+    tour_content_id: str | None = Form(None),
+
+    # 이미지 업로드
+    files: list[UploadFile] = File(...),
+
     db: Session = Depends(get_db),
 ):
 
+    # 이미지 개수 제한
+    if len(files) > 10:
+        raise HTTPException(
+            status_code=400,
+            detail="이미지는 최대 10장까지 가능합니다."
+        )
+
+
+    post_data = schemas.PostCreate(
+        title=title,
+        content=content,
+        author=author,
+        password=password,
+        tour_content_id=tour_content_id,
+    )
+
+
     return crud.create_post(
         db=db,
-        post=post,
+        post=post_data,
+        files=files,
     )
 
 

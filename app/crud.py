@@ -1,11 +1,18 @@
 import math
 
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app import models, schemas
-from app.models import Comment, Post, TourContent
+from app.models import (
+    Comment,
+    Post,
+    TourContent,
+    PostImage,
+)
+
+from app.services.file_upload import save_file
 
 
 # ==========================================
@@ -381,18 +388,23 @@ def get_post_or_404(
 def create_post(
     db: Session,
     post: schemas.PostCreate,
+    files: list[UploadFile] | None
 ):
     """
     게시글 생성
 
-    장소가 선택된 경우:
-    - tour_content_id 연결
-    - 해당 장소 mention_count 1 증가
+    처리:
+    1. 게시글 저장
+    2. 선택 장소 mention_count 증가
+    3. 이미지 파일 저장
+    4. post_images 저장
     """
 
     selected_content = None
 
+    # 장소 선택 확인
     if post.tour_content_id is not None:
+
         selected_content = get_content_by_id(
             db=db,
             content_id=post.tour_content_id,
@@ -404,6 +416,7 @@ def create_post(
                 detail="선택한 장소를 찾을 수 없습니다.",
             )
 
+
     db_post = Post(
         title=post.title.strip(),
         content=post.content.strip(),
@@ -412,41 +425,50 @@ def create_post(
         tour_content_id=post.tour_content_id,
     )
 
+
     try:
+        # 게시글 저장
         db.add(db_post)
 
+        db.flush()
+        # flush를 해야 db_post.id 생성됨
+
+
+        # 장소 언급 수 증가
         if selected_content is not None:
             selected_content.mention_count += 1
 
+
+        # ==========================
+        # 이미지 저장
+        # ==========================
+
+        if files:
+            for file in files:
+                image_url = save_file(file)
+
+                post_image = PostImage(
+                    post_id=db_post.id,
+                    image_url=image_url,
+                )
+
+                db.add(post_image)
+
+
         db.commit()
+
         db.refresh(db_post)
+
 
         return get_post(
             db=db,
             post_id=db_post.id,
         )
 
+
     except Exception:
         db.rollback()
         raise
-
-
-def get_posts(
-    db: Session,
-):
-    """
-    전체 게시글을 최신순으로 조회한다.
-
-    기존 라우터와의 호환을 위해 유지한다.
-    """
-    return (
-        db.query(Post)
-        .options(
-            joinedload(Post.tour_content)
-        )
-        .order_by(Post.created_at.desc())
-        .all()
-    )
 
 
 def get_posts_page(
