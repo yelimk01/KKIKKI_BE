@@ -89,7 +89,6 @@ async def get_chat_response(user_question: str, db: Session) -> str:
                 },
                 {"role": "user", "content": user_question}
             ],
-            temperature=0.5,
             # 🚨 가장 처음에 났던 400 에러를 해결하기 위한 파라미터 적용
             max_completion_tokens=400 
         )
