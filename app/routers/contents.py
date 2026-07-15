@@ -34,7 +34,7 @@ def get_contents(
     size: int = Query(
         12,
         ge=1,
-        le=100,
+        le=7000,
     ),
     keyword: str | None = None,
     content_type_id: int | None = None,
