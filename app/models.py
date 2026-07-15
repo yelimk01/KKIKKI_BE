@@ -109,6 +109,7 @@ class TourContent(Base):
     posts = relationship(
         "Post",
         back_populates="tour_content",
+        passive_deletes=True,
     )
 
 
