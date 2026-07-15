@@ -18,6 +18,7 @@ load_json_to_db()
 app = FastAPI(
     title="LocalHub API",
     version="1.0.0"
+    "https://kkikkilocalhub.netlify.app"
 )
 
 # CORS 설정
