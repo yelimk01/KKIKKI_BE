@@ -100,7 +100,7 @@ def create_post(
     tour_content_id: str | None = Form(None),
 
     # 이미지 업로드
-    files: list[UploadFile] = File(...),
+    files: list[UploadFile] | None = File(None),
 
     db: Session = Depends(get_db),
 ):
