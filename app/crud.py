@@ -73,67 +73,78 @@ def get_contents_page(
     page: int = 1,
     size: int = 12,
     content_type_id: int | None = None,
-    district: str | None = None,
+    district_name: str | None = None,
     keyword: str | None = None,
     sort: str = "name",
 ):
     """
     관광정보 목록 조회
 
-    지원 기능:
+    기능:
     - 콘텐츠 유형 필터
     - 자치구 필터
-    - 장소명 및 주소 검색
-    - 이름순, 인기순, 최신순 정렬
+    - 장소명 검색
+    - 이름순 / 인기순 / 최신순 정렬
     - 페이지네이션
     """
 
     query = db.query(TourContent)
 
+
+    # 콘텐츠 타입 필터
     if content_type_id is not None:
         query = query.filter(
             TourContent.contenttypeid == content_type_id
         )
 
-    if district:
+
+    # 자치구 필터
+    if district_name:
         query = query.filter(
-            TourContent.district_name == district
+            TourContent.district_name == district_name
         )
 
+
+    # 장소명 검색
+    # title만 검색
     if keyword:
         cleaned_keyword = keyword.strip()
 
         if cleaned_keyword:
             query = query.filter(
-                or_(
-                    TourContent.title.contains(
-                        cleaned_keyword
-                    ),
-                    TourContent.addr1.contains(
-                        cleaned_keyword
-                    ),
+                TourContent.title.contains(
+                    cleaned_keyword
                 )
             )
 
+
+    # 정렬
     if sort == "popular":
+
         query = query.order_by(
-            desc(TourContent.view_count),
-            asc(TourContent.title),
+            TourContent.view_count.desc(),
+            TourContent.title.asc(),
         )
+
 
     elif sort == "latest":
+
         query = query.order_by(
-            desc(TourContent.modifiedtime),
-            asc(TourContent.title),
+            TourContent.modifiedtime.desc(),
+            TourContent.title.asc(),
         )
+
 
     else:
-        # 기본값: 이름순
+        # name
         query = query.order_by(
-            asc(TourContent.title)
+            TourContent.title.asc()
         )
 
+
+    # 전체 개수
     total_items = query.count()
+
 
     total_pages = (
         math.ceil(total_items / size)
@@ -141,12 +152,15 @@ def get_contents_page(
         else 0
     )
 
+
+    # 페이지 데이터
     items = (
         query
         .offset((page - 1) * size)
         .limit(size)
         .all()
     )
+
 
     return {
         "items": items,
@@ -193,13 +207,8 @@ def search_contents(
     return (
         db.query(TourContent)
         .filter(
-            or_(
-                TourContent.title.contains(
-                    cleaned_keyword
-                ),
-                TourContent.addr1.contains(
-                    cleaned_keyword
-                ),
+            TourContent.title.contains(
+                cleaned_keyword
             )
         )
         .order_by(
