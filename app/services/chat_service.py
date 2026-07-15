@@ -1,20 +1,14 @@
 import os
-from openai import AsyncOpenAI
+from openai import OpenAI
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from app import crud
 
-# .env 파일 로드
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ENV_PATH = os.path.join(BASE_DIR, ".env")
-load_dotenv(dotenv_path=ENV_PATH)
+load_dotenv()  # .env 파일 로드
+api_key = os.getenv("OPENAI_API_KEY")
 
-
-# 환경 변수에서 가져오기
-api_key = os.environ.get("OPENAI_API_KEY", "local-llm")
-
-client = AsyncOpenAI(
-    api_key=os.environ["OPENAI_API_KEY"]
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 async def get_chat_response(user_question: str, db: Session) -> str:
