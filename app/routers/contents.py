@@ -1,39 +1,82 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+)
+
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
 from app.database import get_db
 from app import crud, schemas
-from app.models import TourContent as ContentModel
+
 
 router = APIRouter(
     prefix="/contents",
-    tags=["Tour Contents"]
+    tags=["Tour Contents"],
 )
 
-@router.get("", response_model=list[schemas.TourContentResponse])
-def get_contents(db: Session = Depends(get_db)):
-    return crud.get_all_contents(db)
 
-@router.get("/search", response_model=list[schemas.TourContentResponse])
-def search_contents(keyword: str, db: Session = Depends(get_db)):
-    return crud.search_contents(db, keyword)
+# ==========================================
+# 관광 콘텐츠 목록
+# 페이지네이션 + 검색 + 자치구 + 타입 + 정렬
+# ==========================================
 
-@router.get("/type/{content_type_id}", response_model=list[schemas.TourContentResponse])
-def get_contents_by_type(content_type_id: int, db: Session = Depends(get_db)):
-    return crud.get_contents_by_type(db, content_type_id)
+@router.get(
+    "",
+    response_model=schemas.TourContentPageResponse,
+)
+def get_contents(
+    page: int = Query(
+        1,
+        ge=1,
+    ),
+    size: int = Query(
+        12,
+        ge=1,
+        le=7000,
+    ),
+    keyword: str | None = None,
+    content_type_id: int | None = None,
+    district_name: str | None = None,
+    sort: str = "latest",
+    db: Session = Depends(get_db),
+):
 
-@router.get("/area/{area_code}", response_model=list[schemas.TourContentResponse])
-def get_contents_by_area(area_code: str, db: Session = Depends(get_db)):
-    results = db.query(ContentModel).filter(
-        ContentModel.zipcode.isnot(None),
-        func.substr(ContentModel.zipcode, 1, 3) == area_code
-    ).all()
-    return results
+    return crud.get_contents_page(
+        db=db,
+        page=page,
+        size=size,
+        keyword=keyword,
+        content_type_id=content_type_id,
+        district_name=district_name,
+        sort=sort,
+    )
 
-@router.get("/{content_id}", response_model=schemas.TourContentResponse)
-def get_content(content_id: str, db: Session = Depends(get_db)):
-    content = crud.get_content_by_id(db, content_id)
-    if not content:
-        raise HTTPException(status_code=404, detail="관광 정보를 찾을 수 없습니다.")
+
+# ==========================================
+# 관광 콘텐츠 상세
+# 조회수 증가
+# ==========================================
+
+@router.get(
+    "/{content_id}",
+    response_model=schemas.TourContentResponse,
+)
+def get_content(
+    content_id: str,
+    db: Session = Depends(get_db),
+):
+
+    content = crud.increase_content_view_count(
+        db=db,
+        content_id=content_id,
+    )
+
+    if content is None:
+        raise HTTPException(
+            status_code=404,
+            detail="관광 정보를 찾을 수 없습니다.",
+        )
+
     return content
