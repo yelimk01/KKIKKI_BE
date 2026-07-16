@@ -39,7 +39,15 @@ def get_contents(
     keyword: str | None = None,
     content_type_id: int | None = None,
     district_name: str | None = None,
-    sort: str = "latest",
+    sort_by: str = Query(
+        "latest",
+        alias="sortBy",
+        pattern="^(name|latest|view_count|mention_count)$",
+        description=(
+            "정렬 기준: "
+            "name, latest, view_count, mention_count"
+        ),
+    ),
     db: Session = Depends(get_db),
 ):
 

@@ -75,7 +75,7 @@ def get_contents_page(
     content_type_id: int | None = None,
     district_name: str | None = None,
     keyword: str | None = None,
-    sort: str = "name",
+    sort_by: str = "latest",
 ):
     """
     관광정보 목록 조회
@@ -83,13 +83,12 @@ def get_contents_page(
     기능:
     - 콘텐츠 유형 필터
     - 자치구 필터
-    - 장소명 검색
-    - 이름순 / 인기순 / 최신순 정렬
+    - 장소명(title) 검색
+    - 이름순 / 최신순 / 조회수순 / 언급수순 정렬
     - 페이지네이션
     """
 
     query = db.query(TourContent)
-
 
     # 콘텐츠 타입 필터
     if content_type_id is not None:
@@ -97,16 +96,18 @@ def get_contents_page(
             TourContent.contenttypeid == content_type_id
         )
 
-
     # 자치구 필터
     if district_name:
-        query = query.filter(
-            TourContent.district_name == district_name
-        )
+        cleaned_district_name = district_name.strip()
 
+        if cleaned_district_name:
+            query = query.filter(
+                TourContent.district_name
+                == cleaned_district_name
+            )
 
     # 장소명 검색
-    # title만 검색
+    # title만 검색한다.
     if keyword:
         cleaned_keyword = keyword.strip()
 
@@ -117,34 +118,36 @@ def get_contents_page(
                 )
             )
 
-
     # 정렬
-    if sort == "popular":
-
+    if sort_by == "view_count":
+        # 상세 조회수가 높은 장소부터
         query = query.order_by(
             TourContent.view_count.desc(),
             TourContent.title.asc(),
         )
 
+    elif sort_by == "mention_count":
+        # 게시글에서 많이 선택된 장소부터
+        query = query.order_by(
+            TourContent.mention_count.desc(),
+            TourContent.title.asc(),
+        )
 
-    elif sort == "latest":
+    elif sort_by == "name":
+        # 이름 오름차순
+        query = query.order_by(
+            TourContent.title.asc()
+        )
 
+    else:
+        # 기본값: 최신순
         query = query.order_by(
             TourContent.modifiedtime.desc(),
             TourContent.title.asc(),
         )
 
-
-    else:
-        # name
-        query = query.order_by(
-            TourContent.title.asc()
-        )
-
-
-    # 전체 개수
+    # 필터 적용 후 전체 데이터 개수
     total_items = query.count()
-
 
     total_pages = (
         math.ceil(total_items / size)
@@ -152,15 +155,13 @@ def get_contents_page(
         else 0
     )
 
-
-    # 페이지 데이터
+    # 현재 페이지 데이터
     items = (
         query
         .offset((page - 1) * size)
         .limit(size)
         .all()
     )
-
 
     return {
         "items": items,
