@@ -88,61 +88,8 @@ def get_contents_page(
     - 페이지네이션
     """
 
-    # 기본 쿼리 생성 (실제 임포트 된 모델 클래스명에 맞춰 수정: 예 - models.TourContent)
     query = db.query(TourContent)
 
-<<<<<<< HEAD
-    # ==========================================
-    # 1. 필터링 (Filtering)
-    # ==========================================
-    
-    # 콘텐츠 유형 필터
-    if content_type_id is not None:
-        query = query.filter(TourContent.content_type_id == content_type_id)
-        
-    # 자치구 필터
-    if district_name:
-        query = query.filter(TourContent.district_name == district_name)
-        
-    # 장소명 검색 (키워드 포함 여부 - 대소문자 구분 없이 검색하려면 ilike 권장)
-    if keyword:
-        # 모델에 'name' 필드가 아닌 'title' 필드라면 TourContent.title 로 변경해주세요.
-        query = query.filter(TourContent.name.ilike(f"%{keyword}%"))
-
-    # ==========================================
-    # 2. 정렬 (Sorting)
-    # ==========================================
-    
-    if sort == "view_count":
-        # 조회수 높은 순 (내림차순)
-        query = query.order_by(TourContent.view_count.desc())
-    elif sort == "mention_count":
-        # 인기순/좋아요 많은 순 (내림차순)
-        query = query.order_by(TourContent.mention_count.desc())
-    elif sort == "latest":
-        # 최신순 (내림차순) - created_at이 있다면 TourContent.created_at.desc() 사용 가능
-        query = query.order_by(TourContent.id.desc())
-    elif sort == "name":
-        # 이름순 (오름차순 가나다순)
-        query = query.order_by(TourContent.name.asc())
-    else:
-        # 기본 정렬
-        query = query.order_by(TourContent.name.asc())
-
-    # ==========================================
-    # 3. 페이지네이션 (Pagination)
-    # ==========================================
-    
-    # 전체 데이터 개수
-    total = query.count()
-    
-    # 건너뛸 개수 계산
-    offset = (page - 1) * size
-    
-    # 데이터 조회
-    items = query.offset(offset).limit(size).all()
-
-=======
     # 콘텐츠 타입 필터
     if content_type_id is not None:
         query = query.filter(
@@ -216,12 +163,12 @@ def get_contents_page(
         .all()
     )
 
->>>>>>> ec46bcf08b7b89cd6e51fe898ce8044f59bc0ebc
     return {
         "items": items,
-        "total": total,
         "page": page,
         "size": size,
+        "total_items": total_items,
+        "total_pages": total_pages,
     }
 
 
@@ -549,11 +496,10 @@ def get_posts_page(
     지원 기능:
     - 제목, 내용, 작성자 검색
     - 특정 장소와 연결된 게시글 조회
-    - 최신순, 조회수순, 좋아요순 (내림차순 정렬)
+    - 최신순, 조회수순, 좋아요순
     - 페이지네이션
     """
 
-    # 기본 쿼리 생성 (관계 데이터인 tour_content도 함께 로드)
     query = (
         db.query(Post)
         .options(
@@ -561,9 +507,6 @@ def get_posts_page(
         )
     )
 
-    # ==========================================
-    # 1. 필터링 (장소 및 검색어)
-    # ==========================================
     if tour_content_id:
         query = query.filter(
             Post.tour_content_id == tour_content_id
@@ -574,53 +517,63 @@ def get_posts_page(
 
         if cleaned_keyword:
             if search_type == "title":
-                query = query.filter(Post.title.contains(cleaned_keyword))
+                query = query.filter(
+                    Post.title.contains(
+                        cleaned_keyword
+                    )
+                )
 
             elif search_type == "content":
-                query = query.filter(Post.content.contains(cleaned_keyword))
+                query = query.filter(
+                    Post.content.contains(
+                        cleaned_keyword
+                    )
+                )
 
             elif search_type == "author":
-                query = query.filter(Post.author.contains(cleaned_keyword))
+                query = query.filter(
+                    Post.author.contains(
+                        cleaned_keyword
+                    )
+                )
 
             else:
-                # search_type == "all" 인 경우
                 query = query.filter(
                     or_(
-                        Post.title.contains(cleaned_keyword),
-                        Post.content.contains(cleaned_keyword),
-                        Post.author.contains(cleaned_keyword),
+                        Post.title.contains(
+                            cleaned_keyword
+                        ),
+                        Post.content.contains(
+                            cleaned_keyword
+                        ),
+                        Post.author.contains(
+                            cleaned_keyword
+                        ),
                         Post.tour_content.has(
-                            TourContent.title.contains(cleaned_keyword)
+                            TourContent.title.contains(
+                                cleaned_keyword
+                            )
                         ),
                     )
                 )
 
-    # ==========================================
-    # 2. 정렬 (조회수/좋아요 순 내림차순 반영)
-    # ==========================================
-    # 라우터/프론트엔드에서 'view_count' 또는 'views'로 요청이 올 경우 모두 처리
-    if sort in ["views", "view_count"]:
+    if sort == "views":
         query = query.order_by(
             Post.view_count.desc(),
             Post.created_at.desc(),
         )
 
-    # 라우터/프론트엔드에서 'like_count' 또는 'likes'로 요청이 올 경우 모두 처리
-    elif sort in ["likes", "like_count"]:
+    elif sort == "likes":
         query = query.order_by(
             Post.like_count.desc(),
             Post.created_at.desc(),
         )
 
-    # 기본값은 최신순 (latest)
     else:
         query = query.order_by(
             Post.created_at.desc()
         )
 
-    # ==========================================
-    # 3. 페이지네이션 연산
-    # ==========================================
     total_items = query.count()
 
     total_pages = (
