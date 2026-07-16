@@ -59,7 +59,7 @@ def get_contents(
         keyword=keyword,
         content_type_id=content_type_id,
         district_name=district_name,
-        sort=sortBy,  # crud 함수에는 기존 파라미터명(sort)으로 전달 혹은 crud.py도 맞춰서 수정 필요
+        sort_by=sort_by,
     )
 
 
