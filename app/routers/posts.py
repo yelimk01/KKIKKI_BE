@@ -196,3 +196,32 @@ def like_post(
         "post_id": post.id,
         "like_count": post.like_count,
     }
+
+# ==========================================
+# 게시글 비밀번호 검증 (수정 전 확인용)
+# ==========================================
+
+@router.post(
+    "/{post_id}/verify-password"
+)
+def verify_post_password(
+    post_id: int,
+    password_data: schemas.PasswordVerify,
+    db: Session = Depends(get_db),
+):
+    
+    is_valid = crud.verify_post_password(
+        db=db, 
+        post_id=post_id, 
+        password=password_data.password
+    )
+    
+    if not is_valid:
+        raise HTTPException(
+            status_code=401, 
+            detail="비밀번호가 일치하지 않습니다."
+        )
+        
+    return {
+        "message": "비밀번호가 확인되었습니다."
+    }

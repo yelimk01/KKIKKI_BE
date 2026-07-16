@@ -30,6 +30,7 @@ def get_contents(
     page: int = Query(
         1,
         ge=1,
+        le=7000,  # page param 상한 7000 추가
     ),
     size: int = Query(
         12,
@@ -39,7 +40,10 @@ def get_contents(
     keyword: str | None = None,
     content_type_id: int | None = None,
     district_name: str | None = None,
-    sort: str = "latest",
+    sortBy: str = Query(
+        "latest",
+        description="정렬 기준: 'latest' | 'view_count' | 'mention_count'"
+    ), # sortBy 파라미터로 수정
     db: Session = Depends(get_db),
 ):
 
@@ -50,7 +54,7 @@ def get_contents(
         keyword=keyword,
         content_type_id=content_type_id,
         district_name=district_name,
-        sort=sort,
+        sort=sortBy,  # crud 함수에는 기존 파라미터명(sort)으로 전달 혹은 crud.py도 맞춰서 수정 필요
     )
 
 

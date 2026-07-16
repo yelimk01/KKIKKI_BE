@@ -384,3 +384,6 @@ class ChatResponse(BaseModel):
     posts: list[ChatPostResponse] = Field(
         default_factory=list,
     )
+
+class PasswordVerify(BaseModel): 
+    password: str
