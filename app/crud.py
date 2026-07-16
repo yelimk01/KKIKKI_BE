@@ -75,7 +75,7 @@ def get_contents_page(
     content_type_id: int | None = None,
     district_name: str | None = None,
     keyword: str | None = None,
-    sort: str = "name",
+    sort_by: str = "latest",
 ):
     """
     관광정보 목록 조회
@@ -83,14 +83,15 @@ def get_contents_page(
     기능:
     - 콘텐츠 유형 필터
     - 자치구 필터
-    - 장소명 검색
-    - 이름순 / 인기순 / 최신순 정렬
+    - 장소명(title) 검색
+    - 이름순 / 최신순 / 조회수순 / 언급수순 정렬
     - 페이지네이션
     """
 
     # 기본 쿼리 생성 (실제 임포트 된 모델 클래스명에 맞춰 수정: 예 - models.TourContent)
     query = db.query(TourContent)
 
+<<<<<<< HEAD
     # ==========================================
     # 1. 필터링 (Filtering)
     # ==========================================
@@ -141,6 +142,81 @@ def get_contents_page(
     # 데이터 조회
     items = query.offset(offset).limit(size).all()
 
+=======
+    # 콘텐츠 타입 필터
+    if content_type_id is not None:
+        query = query.filter(
+            TourContent.contenttypeid == content_type_id
+        )
+
+    # 자치구 필터
+    if district_name:
+        cleaned_district_name = district_name.strip()
+
+        if cleaned_district_name:
+            query = query.filter(
+                TourContent.district_name
+                == cleaned_district_name
+            )
+
+    # 장소명 검색
+    # title만 검색한다.
+    if keyword:
+        cleaned_keyword = keyword.strip()
+
+        if cleaned_keyword:
+            query = query.filter(
+                TourContent.title.contains(
+                    cleaned_keyword
+                )
+            )
+
+    # 정렬
+    if sort_by == "view_count":
+        # 상세 조회수가 높은 장소부터
+        query = query.order_by(
+            TourContent.view_count.desc(),
+            TourContent.title.asc(),
+        )
+
+    elif sort_by == "mention_count":
+        # 게시글에서 많이 선택된 장소부터
+        query = query.order_by(
+            TourContent.mention_count.desc(),
+            TourContent.title.asc(),
+        )
+
+    elif sort_by == "name":
+        # 이름 오름차순
+        query = query.order_by(
+            TourContent.title.asc()
+        )
+
+    else:
+        # 기본값: 최신순
+        query = query.order_by(
+            TourContent.modifiedtime.desc(),
+            TourContent.title.asc(),
+        )
+
+    # 필터 적용 후 전체 데이터 개수
+    total_items = query.count()
+
+    total_pages = (
+        math.ceil(total_items / size)
+        if total_items > 0
+        else 0
+    )
+
+    # 현재 페이지 데이터
+    items = (
+        query
+        .offset((page - 1) * size)
+        .limit(size)
+        .all()
+    )
+
+>>>>>>> ec46bcf08b7b89cd6e51fe898ce8044f59bc0ebc
     return {
         "items": items,
         "total": total,

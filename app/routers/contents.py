@@ -40,10 +40,15 @@ def get_contents(
     keyword: str | None = None,
     content_type_id: int | None = None,
     district_name: str | None = None,
-    sortBy: str = Query(
+    sort_by: str = Query(
         "latest",
-        description="정렬 기준: 'latest' | 'view_count' | 'mention_count'"
-    ), # sortBy 파라미터로 수정
+        alias="sortBy",
+        pattern="^(name|latest|view_count|mention_count)$",
+        description=(
+            "정렬 기준: "
+            "name, latest, view_count, mention_count"
+        ),
+    ),
     db: Session = Depends(get_db),
 ):
 
