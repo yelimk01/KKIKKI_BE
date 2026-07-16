@@ -27,7 +27,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://kkikkilocalhub.netlify.app"
+        "https://kkikkilocalhub.netlify.app",
+        "https://kkikki-localhub.netlify.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
