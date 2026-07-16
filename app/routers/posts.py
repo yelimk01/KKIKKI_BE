@@ -16,7 +16,7 @@ from app.database import get_db
 
 router = APIRouter(
     prefix="/posts",
-    tags=["posts"]
+    tags=["posts"],
 )
 
 
@@ -27,7 +27,7 @@ router = APIRouter(
 
 @router.get(
     "",
-    response_model=schemas.PostPageResponse
+    response_model=schemas.PostPageResponse,
 )
 def read_posts(
     page: int = 1,
@@ -38,7 +38,6 @@ def read_posts(
     sort: str = "latest",
     db: Session = Depends(get_db),
 ):
-
     return crud.get_posts_page(
         db=db,
         page=page,
@@ -57,13 +56,12 @@ def read_posts(
 
 @router.get(
     "/{post_id}",
-    response_model=schemas.PostResponse
+    response_model=schemas.PostResponse,
 )
 def read_post(
     post_id: int,
     db: Session = Depends(get_db),
 ):
-
     db_post = crud.get_post(
         db=db,
         post_id=post_id,
@@ -71,11 +69,10 @@ def read_post(
 
     if db_post is None:
         raise HTTPException(
-            status_code=404,
-            detail="게시글을 찾을 수 없습니다."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="게시글을 찾을 수 없습니다.",
         )
 
-    # 게시글 조회수 증가
     return crud.increase_view_count(
         db=db,
         post_id=post_id,
@@ -98,20 +95,14 @@ def create_post(
     author: str = Form(...),
     password: str = Form(...),
     tour_content_id: str | None = Form(None),
-
-    # 이미지 업로드
     files: list[UploadFile] | None = File(None),
-
     db: Session = Depends(get_db),
 ):
-
-    # 이미지 개수 제한
     if files and len(files) > 10:
         raise HTTPException(
-            status_code=400,
-            detail="이미지는 최대 10장까지 가능합니다."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미지는 최대 10장까지 가능합니다.",
         )
-
 
     post_data = schemas.PostCreate(
         title=title,
@@ -121,12 +112,36 @@ def create_post(
         tour_content_id=tour_content_id,
     )
 
-
     return crud.create_post(
         db=db,
         post=post_data,
         files=files,
     )
+
+
+# ==========================================
+# 게시글 비밀번호 검증
+# 수정·삭제 모달에서 사용
+# ==========================================
+
+@router.post(
+    "/{post_id}/verify-password",
+    response_model=schemas.PasswordVerifyResponse,
+)
+def verify_post_password(
+    post_id: int,
+    request: schemas.PasswordVerifyRequest,
+    db: Session = Depends(get_db),
+):
+    verified = crud.verify_post_password(
+        db=db,
+        post_id=post_id,
+        password=request.password,
+    )
+
+    return {
+        "verified": verified,
+    }
 
 
 # ==========================================
@@ -142,7 +157,6 @@ def update_post(
     post: schemas.PostUpdate,
     db: Session = Depends(get_db),
 ):
-
     return crud.update_post(
         db=db,
         post_id=post_id,
@@ -155,14 +169,13 @@ def update_post(
 # ==========================================
 
 @router.delete(
-    "/{post_id}"
+    "/{post_id}",
 )
 def delete_post(
     post_id: int,
     password: schemas.PostDelete,
     db: Session = Depends(get_db),
 ):
-
     crud.delete_post(
         db=db,
         post_id=post_id,
@@ -170,7 +183,7 @@ def delete_post(
     )
 
     return {
-        "message": "성공적으로 삭제되었습니다."
+        "message": "성공적으로 삭제되었습니다.",
     }
 
 
@@ -186,7 +199,6 @@ def like_post(
     post_id: int,
     db: Session = Depends(get_db),
 ):
-
     post = crud.increase_like_count(
         db=db,
         post_id=post_id,
