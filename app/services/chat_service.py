@@ -98,7 +98,7 @@ async def get_chat_response(user_question: str, history: list[ChatHistoryItem], 
         response = await client.chat.completions.create(
             model=MODEL_NAME, 
             messages=messages,
-            max_completion_tokens=2000 
+            max_completion_tokens=3000 
         )
         print("========== RESPONSE ==========")
         print(response.model_dump())
