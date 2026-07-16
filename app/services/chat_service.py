@@ -42,16 +42,15 @@ else:
 # ==========================================
 # 2. 챗봇 응답 생성 함수
 # ==========================================
-async def get_chat_response(user_question: str, db: Session) -> str:
+async def get_chat_response(user_question: str, history: list[ChatHistoryItem], db: Session) -> str:
     # 키가 없을 때의 임시(Mock) 응답 처리
     if api_key == "dummy_key" or api_key.startswith("sk-여기에"):
         return f"안녕하세요! 현재 챗봇 API 키가 등록되지 않아 임시로 답변해 드립니다. (질문 확인: '{user_question}')"
 
-    # 1. 질문에서 검색 키워드 추출 (간단하게 띄어쓰기 기준 2글자 이상 단어)
+    # 1. 질문에서 검색 키워드 추출 (생략, 기존 코드와 동일)
     keywords = [word for word in user_question.split() if len(word) >= 2]
     search_results = []
     
-    # 2. DB에서 관광 데이터 검색
     if keywords:
         for keyword in keywords:
             results = crud.search_contents(db, keyword)
@@ -59,11 +58,9 @@ async def get_chat_response(user_question: str, db: Session) -> str:
                 search_results.extend(results)
                 break  
 
-    # 검색 결과가 없다면 임의의 데이터 상위 10개 가져오기
     if not search_results:
         search_results = crud.get_contents_by_type(db, content_type_id=15)[:10]
 
-    # 객체 ID(contentid) 기반 중복 제거
     unique_results = {getattr(item, 'contentid', id(item)): item for item in search_results}.values()
     
     # 3. 프롬프트 문맥 생성
@@ -76,20 +73,31 @@ async def get_chat_response(user_question: str, db: Session) -> str:
 
     # 4. API 호출
     try:
+        # (1) 시스템 프롬프트 설정
+        messages = [
+            {
+                "role": "system", 
+                "content": (
+                    "너는 지역 정보 공유 커뮤니티 'LocalHub'의 안내 챗봇이야. "
+                    "친절하고 간결하게 대답해. 다음 제공된 [지역 정보]를 최우선으로 참고해서 답변하고, "
+                    f"데이터에 없는 내용은 일반적인 상식선에서 답변해줘.\n\n[지역 정보]\n{context_text}"
+                )
+            }
+        ]
+        
+        # (2) 이전 대화 히스토리 추가
+        for msg in history:
+            messages.append({
+                "role": msg.role,
+                "content": msg.content
+            })
+            
+        # (3) 현재 사용자 질문 추가
+        messages.append({"role": "user", "content": user_question})
+
         response = await client.chat.completions.create(
             model=MODEL_NAME, 
-            messages=[
-                {
-                    "role": "system", 
-                    "content": (
-                        "너는 지역 정보 공유 커뮤니티 'LocalHub'의 안내 챗봇이야. "
-                        "친절하고 간결하게 대답해. 다음 제공된 [지역 정보]를 최우선으로 참고해서 답변하고, "
-                        f"데이터에 없는 내용은 일반적인 상식선에서 답변해줘.\n\n[지역 정보]\n{context_text}"
-                    )
-                },
-                {"role": "user", "content": user_question}
-            ],
-            # 🚨 가장 처음에 났던 400 에러를 해결하기 위한 파라미터 적용
+            messages=messages,
             max_completion_tokens=2000 
         )
         print("========== RESPONSE ==========")
@@ -99,5 +107,5 @@ async def get_chat_response(user_question: str, db: Session) -> str:
         return response.choices[0].message.content
         
     except Exception as e:
-        print(f"Chatbot Error: {str(e)}") # Render 로그 확인용
+        print(f"Chatbot Error: {str(e)}")
         return f"죄송합니다, 챗봇 서버 연결에 문제가 발생했습니다. (내부 에러 로그를 확인해주세요.)"
