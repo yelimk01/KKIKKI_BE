@@ -33,24 +33,8 @@ LLM의 Context로 제공하는 구조**를 적용했습니다.
 
 ---
 
-## 2. My Role
 
-### Backend & AI Chatbot Development
-
-담당 영역
-
-- FastAPI 기반 REST API 구현
-- SQLAlchemy 기반 데이터 모델 및 DB 연동
-- 관광 콘텐츠 조회·검색·필터·정렬 API 구현
-- 게시글·댓글·이미지 API 구현
-- OpenAI API 기반 AI 챗봇 구현
-- 관광 데이터와 LLM을 연결하는 Context 구성
-- 이전 대화 History를 활용한 연속 대화 처리
-- API 예외 처리 및 서비스 연동
-
----
-
-## 3. Tech Stack
+## 2. Tech Stack
 
 ### Backend
 
@@ -82,7 +66,7 @@ LLM의 Context로 제공하는 구조**를 적용했습니다.
 
 ---
 
-## 4. System Architecture
+## 3. System Architecture
 
 ```text
 ┌───────────────┐
@@ -118,7 +102,7 @@ LLM의 Context로 제공하는 구조**를 적용했습니다.
 
 ---
 
-## 5. AI Chatbot
+## 4. AI Chatbot
 
 ### 핵심 설계
 
@@ -234,7 +218,7 @@ Current User Question
 
 ---
 
-## 6. Main Features
+## 5. Main Features
 
 ### 관광 콘텐츠
 
@@ -266,7 +250,7 @@ Current User Question
 
 ---
 
-## 7. Database
+## 6. Database
 
 ### TourContent
 
@@ -304,7 +288,7 @@ TourContent와 Post 사이의 관계를 구성했습니다.
 
 ---
 
-## 8. Project Structure
+## 7. Project Structure
 
 ```text
 KKIKKI_BE
@@ -340,7 +324,7 @@ API 요청 처리와 비즈니스 로직의 역할을 구분했습니다.
 
 ---
 
-## 9. What I Learned
+## 8. What I Learned
 
 ### 1. AI 모델과 서비스 데이터의 연결
 
@@ -376,7 +360,7 @@ DB, API, 사용자 요청과 연결되는 Backend Component라는 점을 배웠�
 
 ---
 
-## 10. Local Setup
+## 9. Local Setup
 
 ### Repository Clone
 
@@ -412,15 +396,3 @@ FastAPI Swagger UI를 통해 API를 확인할 수 있습니다.
 ```text
 http://localhost:8000/docs
 ```
-
----
-
-## 11. Key Takeaway
-
-> **AI의 성능뿐만 아니라,
-> 신뢰할 수 있는 데이터와 AI를 어떻게 연결할 것인가를 고민한 프로젝트입니다.**
-
-LocalHub를 통해
-FastAPI 기반 Backend API부터 데이터 모델링,
-서비스 DB 검색 결과를 활용한 생성형 AI 챗봇까지 구현하며
-**AI 기능을 실제 서비스 구조 안에 연결하는 경험**을 쌓았습니다.
