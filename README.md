@@ -1,93 +1,361 @@
-# kkikki-be
+# LocalHub 🗺️
 
+> 관광 데이터와 생성형 AI를 연결한 지역 정보 커뮤니티 서비스
 
+LocalHub는 서울의 관광 정보를 탐색하고 사용자 간 정보를 공유할 수 있는
+지역 기반 커뮤니티 서비스입니다.
 
-## Getting started
+관광 콘텐츠 조회뿐만 아니라 게시글과 댓글을 통해 정보를 공유할 수 있으며,
+사용자가 자연어로 지역 정보를 탐색할 수 있도록
+**서비스 데이터베이스와 OpenAI API를 연결한 AI 챗봇**을 구현했습니다.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 1. Project Overview
 
-## Add your files
+기존 관광 정보 서비스에서는 사용자가 원하는 장소를 찾기 위해
+검색 조건을 직접 설정하거나 여러 정보를 확인해야 합니다.
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+LocalHub에서는 이러한 탐색 과정을 개선하기 위해
 
-```
-cd existing_repo
-git remote add origin https://lab.ssafy.com/s16/a10/kkikki-be.git
-git branch -M master
-git push -uf origin master
-```
+- 관광 콘텐츠 검색 및 지역별 탐색
+- 관광지와 연결된 커뮤니티
+- 자연어 기반 AI 관광정보 탐색
 
-## Integrate with your tools
+기능을 하나의 서비스로 구성했습니다.
 
-* [Set up project integrations](https://lab.ssafy.com/s16/a10/kkikki-be/-/settings/integrations)
+특히 AI 챗봇에서는 사용자의 질문을 LLM에 그대로 전달하는 대신,
+**서비스가 보유한 관광 데이터를 먼저 검색하고 해당 정보를
+LLM의 Context로 제공하는 구조**를 적용했습니다.
 
-## Collaborate with your team
+이를 통해 생성형 AI와 기존 서비스 데이터를 연결하는 방법을
+직접 설계하고 구현했습니다.
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+---
 
-## Test and Deploy
+## 2. My Role
 
-Use the built-in continuous integration in GitLab.
+### Backend & AI Chatbot Development
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+담당 영역
 
-***
+- FastAPI 기반 REST API 구현
+- SQLAlchemy 기반 데이터 모델 및 DB 연동
+- 관광 콘텐츠 조회·검색·필터·정렬 API 구현
+- 게시글·댓글·이미지 API 구현
+- OpenAI API 기반 AI 챗봇 구현
+- 관광 데이터와 LLM을 연결하는 Context 구성
+- 이전 대화 History를 활용한 연속 대화 처리
+- API 예외 처리 및 서비스 연동
 
-# Editing this README
+---
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## 3. Tech Stack
 
-## Suggestions for a good README
+### Backend
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+| Technology | Usage |
+|---|---|
+| Python | Backend development |
+| FastAPI | REST API / AI Chatbot API |
+| SQLAlchemy | ORM / Database access |
+| SQLite | LocalHub database |
+| Pydantic | Request / Response validation |
+| Uvicorn | ASGI server |
 
-## Name
-Choose a self-explaining name for your project.
+### AI
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+| Technology | Usage |
+|---|---|
+| OpenAI API | Natural language response generation |
+| AsyncOpenAI | Asynchronous LLM API requests |
+| Prompt Context | DB search results 기반 응답 생성 |
+| Conversation History | Multi-turn conversation context |
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Deployment / Integration
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+| Technology | Usage |
+|---|---|
+| Render | Backend deployment environment |
+| Netlify | Frontend deployment environment |
+| REST API | Frontend–Backend communication |
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+---
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## 4. System Architecture
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+```text
+┌───────────────┐
+│     User      │
+└───────┬───────┘
+        │
+        │ HTTP Request
+        ▼
+┌───────────────────────┐
+│       Frontend        │
+└───────────┬───────────┘
+            │ REST API
+            ▼
+┌───────────────────────────────┐
+│            FastAPI            │
+│                               │
+│  ┌──────────┐  ┌───────────┐ │
+│  │ Contents │  │ Community │ │
+│  │   API    │  │    API    │ │
+│  └────┬─────┘  └───────────┘ │
+│       │                       │
+│  ┌────▼─────────────────────┐ │
+│  │      AI Chatbot API      │ │
+│  └────┬───────────────┬─────┘ │
+└───────┼───────────────┼───────┘
+        │               │
+        ▼               ▼
+┌──────────────┐  ┌──────────────┐
+│    SQLite    │  │  OpenAI API  │
+│ Tourism Data │  │     LLM      │
+└──────────────┘  └──────────────┘
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+5. AI Chatbot
+핵심 설계
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+AI 챗봇을 구현하면서 가장 중요하게 고려한 부분은
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+LLM이 자체 지식에만 의존하지 않고
+LocalHub가 보유한 데이터를 우선 활용하도록 하는 것
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+이었습니다.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+사용자의 질문을 그대로 LLM에 전달하는 대신,
+질문과 관련된 관광 데이터를 먼저 데이터베이스에서 검색한 뒤
+해당 결과를 Prompt Context로 구성하여 전달하도록 설계했습니다.
 
-## License
-For open source projects, say how it is licensed.
+Chatbot Flow
+사용자 질문
+    │
+    ▼
+질문에서 검색 키워드 추출
+    │
+    ▼
+LocalHub DB 검색
+    │
+    ▼
+검색 결과 중복 제거
+    │
+    ▼
+관련 관광 정보 선택
+    │
+    ▼
+Prompt Context 생성
+    │
+    ├──── 이전 대화 History
+    │
+    ▼
+OpenAI API 호출
+    │
+    ▼
+사용자에게 답변 반환
+1) Keyword Extraction
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+사용자 질문을 단어 단위로 분리하고
+2자 이상의 단어를 검색 키워드 후보로 사용합니다.
+
+keywords = [
+    word
+    for word in user_question.split()
+    if len(word) >= 2
+]
+2) Database Search
+
+추출한 키워드를 이용하여 LocalHub 데이터베이스에서
+관련 관광 콘텐츠를 검색합니다.
+
+검색 결과가 존재하면 해당 데이터를 AI 답변의 근거 정보로 사용합니다.
+
+3) Duplicate Removal
+
+동일한 관광 콘텐츠가 중복으로 전달되지 않도록
+contentid를 기준으로 검색 결과를 정리합니다.
+
+unique_results = {
+    getattr(item, "contentid", id(item)): item
+    for item in search_results
+}.values()
+4) Context Generation
+
+검색 결과 중 주요 관광 정보를 선택하여
+장소명, 주소, 전화번호를 포함한 Context를 생성합니다.
+
+[지역 정보]
+
+- 장소 A
+  주소: ...
+  전화번호: ...
+
+- 장소 B
+  주소: ...
+  전화번호: ...
+
+생성된 Context를 System Prompt에 포함해
+LLM이 서비스 데이터를 우선 참고하도록 구성했습니다.
+
+5) Conversation History
+
+현재 질문뿐만 아니라 이전 대화 내용을 함께 전달하여
+연속된 질문에서도 대화의 맥락을 유지하도록 구현했습니다.
+
+System Prompt
+     +
+DB Context
+     +
+Previous Conversation History
+     +
+Current User Question
+          │
+          ▼
+      OpenAI API
+6. Main Features
+관광 콘텐츠
+관광 콘텐츠 목록 조회
+Keyword 검색
+자치구별 필터링
+콘텐츠 유형별 필터링
+페이지네이션
+이름 / 최신순 / 조회수 / 언급수 정렬
+상세 조회
+상세 조회 시 조회수 증가
+Community
+게시글 작성 및 조회
+관광 콘텐츠와 게시글 연결
+댓글 기능
+게시글 이미지 관리
+조회수 및 좋아요 관리
+AI Chatbot
+자연어 질문 입력
+질문 기반 관광 데이터 검색
+DB 검색 결과 기반 Prompt Context 생성
+OpenAI API 기반 응답 생성
+이전 대화 History 반영
+API 오류 발생 시 예외 응답
+7. Database
+TourContent
+
+관광 콘텐츠 정보를 관리합니다.
+
+주요 데이터
+
+contentid
+contenttypeid
+title
+addr1 / addr2
+district_name
+tel
+mapx / mapy
+firstimage
+view_count
+mention_count
+Post
+
+커뮤니티 게시글을 관리하며,
+특정 관광 콘텐츠와 연결할 수 있도록 설계했습니다.
+
+Post
+ ├── TourContent
+ ├── Comment
+ └── PostImage
+
+관광 콘텐츠가 삭제되는 경우에도 게시글 자체는 유지될 수 있도록
+TourContent와 Post 사이의 관계를 구성했습니다.
+
+8. Project Structure
+KKIKKI_BE
+│
+├── app
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── crud.py
+│   │
+│   ├── routers
+│   │   ├── contents.py
+│   │   ├── posts.py
+│   │   ├── comments.py
+│   │   ├── images.py
+│   │   └── chatbot.py
+│   │
+│   ├── services
+│   │   ├── chat_service.py
+│   │   ├── json_loader.py
+│   │   └── file_upload.py
+│   │
+│   ├── data
+│   ├── static
+│   └── utils
+│
+└── requirements.txt
+
+Router와 Service를 분리하여
+API 요청 처리와 비즈니스 로직의 역할을 구분했습니다.
+
+9. What I Learned
+1. AI 모델과 서비스 데이터의 연결
+
+생성형 AI를 호출하는 것만으로는
+서비스가 보유한 정보를 정확하게 활용하기 어렵다는 점을 경험했습니다.
+
+이를 해결하기 위해
+
+질문 → 데이터 검색 → Context 구성 → LLM 호출
+
+과정을 직접 설계하면서
+AI와 서비스 데이터를 연결하는 방법을 학습했습니다.
+
+2. AI도 하나의 Backend Component이다
+
+챗봇을 구현하면서 AI 기능 역시 독립적인 기능이 아니라
+DB, API, 사용자 요청과 연결되는 Backend Component라는 점을 배웠습니다.
+
+따라서 모델 성능뿐만 아니라
+
+어떤 데이터를 모델에 제공할지
+어떤 정보를 우선하도록 할지
+대화 맥락을 어떻게 유지할지
+API 오류를 어떻게 처리할지
+
+까지 함께 고려해야 안정적인 AI 서비스를 만들 수 있다는 것을 경험했습니다.
+
+3. 데이터 구조의 중요성
+
+관광 콘텐츠와 게시글을 연결하고
+조회수와 언급 횟수를 관리하면서
+서비스 요구사항에 맞는 데이터 모델과 관계를 설계하는 경험을 쌓았습니다.
+
+10. Local Setup
+Repository Clone
+git clone <repository-url>
+cd KKIKKI_BE
+Install Dependencies
+pip install -r requirements.txt
+Environment Variables
+
+프로젝트 루트에 .env 파일을 생성합니다.
+
+OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+
+API Key는 GitHub에 업로드하지 않습니다.
+
+Run Server
+uvicorn app.main:app --reload
+
+FastAPI Swagger UI를 통해 API를 확인할 수 있습니다.
+
+http://localhost:8000/docs
+11. Key Takeaway
+
+AI의 성능뿐만 아니라,
+신뢰할 수 있는 데이터와 AI를 어떻게 연결할 것인가를 고민한 프로젝트입니다.
+
+LocalHub를 통해
+FastAPI 기반 Backend API부터 데이터 모델링,
+서비스 DB 검색 결과를 활용한 생성형 AI 챗봇까지 구현하며
+AI 기능을 실제 서비스 구조 안에 연결하는 경험을 쌓았습니다.
